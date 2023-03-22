@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aplicativo de Desenho</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+    }
+    canvas {
+      border: 1px solid #000;
+      touch-action: none;
+    }
+    #tools {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+    #tools button {
+      margin-right: 1rem;
+    }
+    #colors {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 1rem;
+    }
+    #colors .color {
+      width: 30px;
+      height: 30px;
+      border: 1px solid #000;
+      margin-right: 1rem;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <div id="tools">
+    <button id="clear">Limpar</button>
+    <button id="eraser">Borracha</button>
+  </div>
+  <div id="colors">
+    <div class="color" style="background-color: #000" title="Preto"></div>
+    <div class="color" style="background-color: #f00" title="Vermelho"></div>
+    <div class="color" style="background-color: #0f0" title="Verde"></div>
+    <div class="color" style="background-color: #00f" title="Azul"></div>
+  </div>
+  <canvas id="canvasDesenho" width="500" height="500"></canvas>
+  <script>
+    const canvas = document.getElementById('canvasDesenho');
+    canvas.width = Math.min(window.innerWidth * 0.8, 500);
+    canvas.height = Math.min(window.innerHeight * 0.8, 500);
+    const ctx = canvas.getContext('2d');
+
+    let desenhando = false;
+    let corAtual = '#000';
+    let borracha = false;
+
+    canvas.addEventListener('mousedown', iniciarDesenho);
+    canvas.addEventListener('mousemove', desenhar);
+    canvas.addEventListener('mouseup', pararDesenho);
+
+    canvas.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      iniciarDesenho(e.changedTouches[0]);
+    });
+    canvas.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+      desenhar(e.changedTouches[0]);
+    });
+    canvas.addEventListener('touchend', (e) => {
+      e.preventDefault();
+      pararDesenho();
+    });
+
+    function iniciarDesenho(e) {
+      desenhando = true;
+      ctx.beginPath();
+      ctx.moveTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+    }
+
+    function desenhar(e) {
+      if (!desenhando) return;
+      ctx.lineTo(e.clientX - canvas.offsetLeft, e.clientY - canvas.offsetTop);
+      ctx.strokeStyle = borracha ? '#f0f0f0' : corAtual;
+      ctx.lineWidth = borracha ? 10 : 3;
+      ctx.lineCap = 'round';
+      ctx.stroke();
+    }
+
+        function pararDesenho() {
+      desenhando = false;
+    }
+
+    document.getElementById('clear').addEventListener('click', () => {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    });
+
+    document.getElementById('eraser').addEventListener('click', () => {
+      borracha = !borracha;
+    });
+
+    document.querySelectorAll('#colors .color').forEach((colorDiv) => {
+      colorDiv.addEventListener('click', () => {
+        corAtual = colorDiv.style.backgroundColor;
+        borracha = false;
+      });
+    });
+
+    window.addEventListener('resize', () => {
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      canvas.width = Math.min(window.innerWidth * 0.8, 500);
+      canvas.height = Math.min(window.innerHeight * 0.8, 500);
+      ctx.putImageData(imageData, 0, 0);
+    });
+  </script>
+  <footer>&copy:Alexandre Menezes Ferreira - 2023</footer>
+</body>
+</html>
+
